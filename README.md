@@ -54,12 +54,12 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
   * Required User Feature: User can create a team by selecting up to 6 characters.
 - [ ] **Team Management Screen**
   * Required User Feature: User can view their saved teams and delete them if desired.
-- [ ] **Friend Requests Screen**
-  * Optional User Feature: User can send and receive friend requests.
-- [ ] **Messages Screen**
-  * Optional User Feature: User can send messages to friends.
 - [ ] **Profile Screen** (Optional)
   * User can view their saved teams and friend list (if friend feature is used).
+- [ ] **Friend Requests Screen** (Optional)
+  * Optional User Feature: User can send and receive friend requests.
+- [ ] **Messages Screen** (Optional)
+  * Optional User Feature: User can send messages to friends.
 
 ### 3. Navigation
 
