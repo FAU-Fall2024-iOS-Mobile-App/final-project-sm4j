@@ -107,7 +107,7 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 ## Wireframes
 
-![Wireframe](https://i.imgur.com/h4d3OhS.png)
+![Wireframe](https://i.imgur.com/SmetTqA.png)
 
 ## Schema
 
