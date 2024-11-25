@@ -49,6 +49,8 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
   * Required User Feature: User sees a splash screen with the app logo and branding upon launching the app.
 - [ ] **Login Screen**
   * Required User Feature: User can log in to the app using their Back4App account.
+- [ ] **Sign Up Screen**
+  * Required User Feature: User can sign up for a Back4app account.
 - [ ] **Character Search Screen**
   * Required User Feature: User can search for Marvel characters using name, name starts with, or series.
 - [ ] **Character Info Screen**
@@ -101,15 +103,7 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 ## Wireframes
 
-[Add picture of your hand sketched wireframes in this section]
-
-### [BONUS] Digital Wireframes & Mockups
-
-[Add your digital wireframes or mockups here]
-
-### [BONUS] Interactive Prototype
-
-[Include a link to an interactive prototype, if available]
+![Wireframe](https://i.imgur.com/h4d3OhS.png)
 
 ## Schema
 
