@@ -51,13 +51,13 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
   * Required User Feature: User can log in to the app using their Back4App account.
 - [ ] **Character Search Screen**
   * Required User Feature: User can search for Marvel characters using name, name starts with, or series.
-  * - [ ] **Character Info Screen**
+- [ ] **Character Info Screen**
   * Required User Feature: User can view detailed character information, including name, description, and image.
 - [ ] **Team Creation Screen**
   * Required User Feature: User can create a team by selecting up to 6 characters.
 - [ ] **Team Management Screen**
   * Required User Feature: User can view their saved teams, which are displayed as a stack list with distinct selectable colors or icons.
-  * User can select a team from the list, which leads to a detailed view of the team.
+  * Required User Feature: User can select a team from the list, which leads to a detailed view of the team.
 - [ ] **Profile Screen** (Optional)
   * User can view their saved teams and friend list (if friend feature is used).
 - [ ] **Friend Requests Screen** (Optional)
