@@ -11,16 +11,16 @@
 
 ### Description
 
-The **Marvel Dream Teams** app allows users to search for Marvel characters, create their own teams by adding up to 6 characters per team, and save their teams in their user accounts. The app utilizes the **Marvel API** to fetch character data and **Back4App/Parse** for user authentication. Users can also send friend requests and message their friends within the app.
+The **Marvel Dream Teams** app allows users to search for Marvel characters, create their own teams by adding up to 6 characters per team, and save those teams in their user accounts. The app uses the **Marvel API** to fetch character data and **Back4App/Parse** for user authentication. Users can also send friend requests and message their friends if they choose to use these optional features.
 
 ### App Evaluation
 
 **Category:** Entertainment / Social  
 **Mobile:** Mobile application only  
-**Story:** Users can create teams of Marvel characters, manage their teams, and interact with other users via friend requests and messages.  
+**Story:** Users can create teams of Marvel characters, manage their teams, and optionally interact with other users via friend requests and messages.  
 **Market:** Marvel fans, comic book enthusiasts, and users interested in team-building apps.  
 **Habit:** Occasional use, primarily for managing teams or discovering new characters.  
-**Scope:** Narrow app, focusing on character search, team creation, and basic social interaction.
+**Scope:** Narrow app, focusing on character search, team creation, and optional social interaction.
 
 ## Product Spec
 
@@ -33,13 +33,14 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 * User can create a team of 6 Marvel characters.
 * User can save a maximum of 10 teams.
 * User can delete a team.
-* User can send and receive friend requests.
-* User can send messages to friends.
+* User can view their saved teams.
 
 **Optional Nice-to-have Stories**
 
 * User can persist their login session across app restarts.
-* User can see a list of their teams and friends on their profile screen.
+* User can send and receive friend requests.
+* User can send messages to friends.
+* User can view their profile with saved teams and friends list (if friend feature is used).
 
 ### 2. Screen Archetypes
 
@@ -54,11 +55,11 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 - [ ] **Team Management Screen**
   * Required User Feature: User can view their saved teams and delete them if desired.
 - [ ] **Friend Requests Screen**
-  * Required User Feature: User can send and receive friend requests.
+  * Optional User Feature: User can send and receive friend requests.
 - [ ] **Messages Screen**
-  * Required User Feature: User can send messages to friends.
-- [ ] **Profile Screen**
-  * Optional User Feature: User can view their saved teams and friend list.
+  * Optional User Feature: User can send messages to friends.
+- [ ] **Profile Screen** (Optional)
+  * User can view their saved teams and friend list (if friend feature is used).
 
 ### 3. Navigation
 
@@ -67,9 +68,10 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 - [ ] Splash Screen
 - [ ] Home Feed (Character Search)
 - [ ] Team Management
-- [ ] Profile (User Teams, Friends)
-- [ ] Messages
-- [ ] Friend Requests
+- [ ] Team Creation
+- [ ] Profile (Optional)
+- [ ] Messages (Optional)
+- [ ] Friend Requests (Optional)
 
 **Flow Navigation** (Screen to Screen)
 
@@ -82,11 +84,14 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 - [ ] **Team Creation Screen**
   * Leads to **Team Management Screen**
 - [ ] **Team Management Screen**
-  * Leads to **Profile Screen**
-- [ ] **Profile Screen**
-  * Leads to **Friend Requests Screen**
-- [ ] **Friend Requests Screen**
-  * Leads to **Messages Screen**
+  * Leads to **Profile Screen** (Optional)
+- [ ] **Profile Screen** (Optional)
+  * Leads to **Friend Requests Screen** (Optional)
+  * Leads to **Messages Screen** (Optional)
+- [ ] **Friend Requests Screen** (Optional)
+  * Leads back to **Profile Screen** (Optional)
+- [ ] **Messages Screen** (Optional)
+  * Leads back to **Profile Screen**
 
 ## Wireframes
 
@@ -111,8 +116,8 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 | password  | String | User's password for login authentication      |
 | email     | String | User's email address                          |
 | teams     | Array  | Array of team objects saved by the user       |
-| friends   | Array  | Array of user objects representing friends    |
-| messages  | Array  | Array of message objects between friends     |
+| friends   | Array  | Array of user objects representing friends (optional) |
+| messages  | Array  | Array of message objects between friends (optional) |
 
 **Character**
 | Property    | Type   | Description                                   |
@@ -136,6 +141,6 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 - [POST] `/users/login` - To log in a user.
 - [POST] `/teams` - To create a new team.
 - [DELETE] `/teams/{teamID}` - To delete an existing team.
-- [POST] `/friend_requests` - To send a friend request to another user.
-- [POST] `/messages` - To send a message to a friend.
-- [GET] `/users/{userID}/friends` - To retrieve a list of the user's friends.
+- [POST] `/friend_requests` (optional) - To send a friend request to another user.
+- [POST] `/messages` (optional) - To send a message to a friend.
+- [GET] `/users/{userID}/friends` (optional) - To retrieve a list of the user's friends.
