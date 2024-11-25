@@ -34,6 +34,7 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 * User can save a maximum of 10 teams.
 * User can delete a team.
 * User can view their saved teams.
+* User can view detailed information about each character, including name, description, and image.
 
 **Optional Nice-to-have Stories**
 
@@ -50,10 +51,13 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
   * Required User Feature: User can log in to the app using their Back4App account.
 - [ ] **Character Search Screen**
   * Required User Feature: User can search for Marvel characters using name, name starts with, or series.
+  * - [ ] **Character Info Screen**
+  * Required User Feature: User can view detailed character information, including name, description, and image.
 - [ ] **Team Creation Screen**
   * Required User Feature: User can create a team by selecting up to 6 characters.
 - [ ] **Team Management Screen**
-  * Required User Feature: User can view their saved teams and delete them if desired.
+  * Required User Feature: User can view their saved teams, which are displayed as a stack list with distinct selectable colors or icons.
+  * User can select a team from the list, which leads to a detailed view of the team.
 - [ ] **Profile Screen** (Optional)
   * User can view their saved teams and friend list (if friend feature is used).
 - [ ] **Friend Requests Screen** (Optional)
@@ -80,11 +84,13 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 - [ ] **Login Screen**
   * Leads to **Character Search Screen**
 - [ ] **Character Search Screen**
-  * Leads to **Team Creation Screen**
-- [ ] **Team Creation Screen**
+  * Leads to **Character Info Screen**
   * Leads to **Team Management Screen**
 - [ ] **Team Management Screen**
-  * Leads to **Profile Screen** (Optional)
+  * Leads to **Team Creation Screen**
+  * Leads to **Team Detail Screen** (Displays selected team and its members)
+- [ ] **Team Detail Screen**
+  * Leads to **Character Info Screen** (for viewing individual character info)
 - [ ] **Profile Screen** (Optional)
   * Leads to **Friend Requests Screen** (Optional)
   * Leads to **Messages Screen** (Optional)
