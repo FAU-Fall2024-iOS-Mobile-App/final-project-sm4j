@@ -71,7 +71,6 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 **Tab Navigation** (Tab to Screen)
 
-- [ ] Splash Screen
 - [ ] Home Feed (Character Search)
 - [ ] Team Management
 - [ ] Team Creation
@@ -85,9 +84,14 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
   * Leads to **Login Screen**
 - [ ] **Login Screen**
   * Leads to **Character Search Screen**
+  * Leads to **Sign Up Screen**
+- [ ] **Sign Up Screen**
+  * Leads to **Character Search Screen**
 - [ ] **Character Search Screen**
   * Leads to **Character Info Screen**
   * Leads to **Team Management Screen**
+- [ ] **Character Info Screen**
+  * Leads back to **Character Search Screen** or **Team Detail Screen**
 - [ ] **Team Management Screen**
   * Leads to **Team Creation Screen**
   * Leads to **Team Detail Screen** (Displays selected team and its members)
