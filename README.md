@@ -28,20 +28,20 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 **Required Must-have Stories**
 
-* User can register and log in to their account.
-* User can search for Marvel characters by name, name start, or series.
-* User can create a team of 6 Marvel characters.
-* User can save a maximum of 10 teams.
-* User can delete a team.
-* User can view their saved teams.
-* User can view detailed information about each character, including name, description, and image.
+- [ ] User can register and log in to their account.
+- [ ] User can search for Marvel characters by name, name start, or series.
+- [ ] User can create a team of 6 Marvel characters.
+- [ ] User can save a maximum of 10 teams.
+- [ ] User can delete a team.
+- [ ] User can view their saved teams.
+- [ ] User can view detailed information about each character, including name, description, and image.
 
 **Optional Nice-to-have Stories**
 
-* User can persist their login session across app restarts.
-* User can send and receive friend requests.
-* User can send messages to friends.
-* User can view their profile with saved teams and friends list (if friend feature is used).
+- [ ] User can persist their login session across app restarts.
+- [ ] User can send and receive friend requests.
+- [ ] User can send messages to friends.
+- [ ] User can view their profile with saved teams and friends list (if friend feature is used).
 
 ### 2. Screen Archetypes
 
