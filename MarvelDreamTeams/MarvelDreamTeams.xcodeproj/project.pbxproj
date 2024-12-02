@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B23CD6732CFE656C004F7B33 /* ParseSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B23CD6722CFE656C004F7B33 /* ParseSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		B23CD6602CFE6237004F7B33 /* MarvelDreamTeams.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MarvelDreamTeams.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B23CD6732CFE656C004F7B33 /* ParseSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = MarvelDreamTeams;
 			packageProductDependencies = (
+				B23CD6722CFE656C004F7B33 /* ParseSwift */,
 			);
 			productName = MarvelDreamTeams;
 			productReference = B23CD6602CFE6237004F7B33 /* MarvelDreamTeams.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = B23CD6572CFE6237004F7B33;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B23CD6712CFE656C004F7B33 /* XCRemoteSwiftPackageReference "Parse-Swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B23CD6612CFE6237004F7B33 /* Products */;
 			projectDirPath = "";
@@ -322,6 +331,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B23CD6712CFE656C004F7B33 /* XCRemoteSwiftPackageReference "Parse-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/parse-community/Parse-Swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.14.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B23CD6722CFE656C004F7B33 /* ParseSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B23CD6712CFE656C004F7B33 /* XCRemoteSwiftPackageReference "Parse-Swift" */;
+			productName = ParseSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B23CD6582CFE6237004F7B33 /* Project object */;
 }
