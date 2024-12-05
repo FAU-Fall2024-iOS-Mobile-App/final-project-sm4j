@@ -1028,6 +1028,7 @@ struct ParseTeam: ParseObject {
 
 struct InfoView: View {
     @Environment(\.presentationMode) var presentationMode
+    @State private var showTerms = false
     
     var body: some View {
         NavigationView {
@@ -1081,12 +1082,111 @@ struct InfoView: View {
                             }
                         }
                         .padding(.horizontal)
+                        
+                        Text("Important Information")
+                            .font(.headline)
+                            .padding(.top, 10)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("• Teams and members are saved across sessions")
+                                .font(.caption)
+                            Text("• Maximum of 6 members per team")
+                                .font(.caption)
+                            Text("• Maximum of 10 teams per user")
+                                .font(.caption)
+                        }
+                        .padding(.horizontal)
                     }
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        showTerms = true
+                    }) {
+                        Text("Terms of Service")
+                            .foregroundColor(.blue)
+                            .font(.footnote)
+                    }
+                    .padding(.top, 20)
                 }
                 .padding(.horizontal, 10)
                 .padding(.bottom, 20)
             }
             .navigationBarTitle("Information", displayMode: .inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("Done")
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+            .sheet(isPresented: $showTerms) {
+                TermsView()
+            }
+        }
+    }
+}
+
+struct TermsView: View {
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Group {
+                        Text("Terms of Service")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        
+                        Text("Last Updated: \(Date().formatted(date: .long, time: .omitted))")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        
+                        Text("1. Acceptance of Terms")
+                            .font(.headline)
+                        Text("By accessing and using Marvel Dream Teams, you agree to be bound by these Terms of Service.")
+                            .font(.caption)
+                        
+                        Text("2. Marvel Content")
+                            .font(.headline)
+                        Text("All Marvel-related content, including character information and images, is provided through the Marvel API and is protected by copyright. This content is owned by Marvel Entertainment, LLC.")
+                            .font(.caption)
+                        
+                        Text("3. User Content")
+                            .font(.headline)
+                        Text("You are responsible for the teams you create and maintain. Teams must not contain inappropriate or offensive content.")
+                            .font(.caption)
+                        
+                        Text("4. Limitations")
+                            .font(.headline)
+                        Text("Each user is limited to 10 teams with a maximum of 6 members per team. These limitations are subject to change.")
+                            .font(.caption)
+                        
+                        Text("5. Data Storage")
+                            .font(.headline)
+                        Text("Your teams and account information are stored securely and will persist across sessions. We do not share your personal information with third parties.")
+                            .font(.caption)
+                    }
+                    
+                    Group {
+                        Text("6. Modifications")
+                            .font(.headline)
+                        Text("We reserve the right to modify these terms at any time. Continued use of the app constitutes acceptance of modified terms.")
+                            .font(.caption)
+                        
+                        Text("7. Disclaimer")
+                            .font(.headline)
+                        Text("This app is a fan project and is not officially affiliated with Marvel Entertainment, LLC.")
+                            .font(.caption)
+                    }
+                }
+                .padding()
+            }
+            .navigationBarTitle("Terms of Service", displayMode: .inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
