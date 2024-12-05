@@ -596,15 +596,21 @@ struct TeamListView: View {
     
     var body: some View {
         VStack {
-            List {
-                ForEach(filteredTeams) { team in
-                    NavigationLink(destination: TeamDetailView(team: team)) {
-                        Text(team.name)
-                            .foregroundColor(.black)
+            if teamManager.teams.isEmpty {
+                Text("No teams yet")
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                List {
+                    ForEach(filteredTeams) { team in
+                        NavigationLink(destination: TeamDetailView(team: team)) {
+                            Text(team.name)
+                                .foregroundColor(.black)
+                        }
                     }
                 }
+                .listStyle(PlainListStyle())
             }
-            .listStyle(PlainListStyle())
         }
         .searchable(text: $searchText, prompt: "Search Teams")
         .navigationBarTitle("Dream Teams", displayMode: .inline)
@@ -620,6 +626,9 @@ struct TeamListView: View {
         }
         .sheet(isPresented: $showCreateTeam) {
             CreateTeamView()
+        }
+        .onAppear {
+            teamManager.fetchTeams() // Refresh teams when view appears
         }
     }
 }
@@ -781,14 +790,18 @@ class TeamManager: ObservableObject {
     }
     
     func fetchTeams() {
+        print("Fetching teams...") // Debug print
         let query = ParseTeam.query()
             .include("userId")
+            .where("userId" == User.current?.objectId) // Only fetch current user's teams
             .order([.ascending("name")])
         
         query.find { [weak self] result in
             switch result {
             case .success(let parseTeams):
+                print("Found \(parseTeams.count) teams") // Debug print
                 DispatchQueue.main.async {
+                    // First, create teams without members
                     self?.teams = parseTeams.compactMap { parseTeam in
                         guard let name = parseTeam.name else { return nil }
                         return Team(
@@ -796,6 +809,13 @@ class TeamManager: ObservableObject {
                             description: parseTeam.description ?? "",
                             parseObjectId: parseTeam.objectId
                         )
+                    }
+                    
+                    // Then, fetch character details for each team
+                    for (index, parseTeam) in parseTeams.enumerated() {
+                        if let memberIds = parseTeam.members {
+                            self?.fetchCharacterDetails(for: memberIds, teamIndex: index)
+                        }
                     }
                 }
             case .failure(let error):
@@ -814,6 +834,7 @@ class TeamManager: ObservableObject {
         parseTeam.save { [weak self] result in
             switch result {
             case .success(let savedTeam):
+                print("Team saved successfully") // Debug print
                 DispatchQueue.main.async {
                     var newTeam = team
                     newTeam.parseObjectId = savedTeam.objectId
@@ -825,6 +846,35 @@ class TeamManager: ObservableObject {
         }
     }
     
+    private func fetchCharacterDetails(for memberIds: [String], teamIndex: Int) {
+        for memberId in memberIds {
+            guard let id = Int(memberId) else { continue }
+            
+            let timestamp = String(Date().timeIntervalSince1970)
+            let hash = MarvelAPI.generateHash(timestamp: timestamp)
+            
+            let urlString = "\(MarvelAPI.baseURL)/characters/\(id)?ts=\(timestamp)&apikey=\(MarvelAPI.publicKey)&hash=\(hash)"
+            
+            guard let url = URL(string: urlString) else { continue }
+            
+            URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+                guard let data = data,
+                      error == nil,
+                      let response = try? JSONDecoder().decode(MarvelResponse.self, from: data) else {
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    if let character = response.data.results.first {
+                        if teamIndex < self?.teams.count ?? 0 {
+                            self?.teams[teamIndex].members.append(character)
+                        }
+                    }
+                }
+            }.resume()
+        }
+    }
+    
     func addCharacterToTeam(character: MarvelCharacter, teamId: UUID) {
         guard let teamIndex = teams.firstIndex(where: { $0.id == teamId }),
               let parseObjectId = teams[teamIndex].parseObjectId else { return }
@@ -833,14 +883,13 @@ class TeamManager: ObservableObject {
         
         query.first { [weak self] result in
             switch result {
-            case .success(let parseTeam):
+            case .success(var parseTeam):
                 var updatedMembers = parseTeam.members ?? []
                 updatedMembers.append(String(character.id))
                 
-                var updatedParseTeam = parseTeam
-                updatedParseTeam.members = updatedMembers
+                parseTeam.members = updatedMembers
                 
-                updatedParseTeam.save { saveResult in
+                parseTeam.save { saveResult in
                     switch saveResult {
                     case .success:
                         DispatchQueue.main.async {
