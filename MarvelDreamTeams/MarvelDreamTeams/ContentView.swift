@@ -666,6 +666,7 @@ struct CreateTeamView: View {
 struct TeamDetailView: View {
     let team: Team
     @EnvironmentObject var teamManager: TeamManager
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         ScrollView {
@@ -674,39 +675,27 @@ struct TeamDetailView: View {
                     .font(.title)
                     .fontWeight(.bold)
                 
-                // Top row (first 3 characters)
                 CharacterRowView(characters: Array(team.members.prefix(3)))
                 
                 Text("Squad Breakdown")
                     .font(.headline)
                     .foregroundColor(.gray)
                 
-                // Bottom row (last 3 characters, if any)
                 CharacterRowView(characters: team.members.count > 3 ? 
                     Array(team.members[3..<min(6, team.members.count)]) : [])
                 
                 Spacer()
                 
-                // Buttons
-                VStack(spacing: 10) {
-                    Button(action: {}) {
-                        Text("Add Member")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(team.canAddMember ? Color.red : Color.gray)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    .disabled(!team.canAddMember)
-                    
-                    Button(action: {}) {
-                        Text("Delete Team")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.red.opacity(0.2))
-                            .foregroundColor(.red)
-                            .cornerRadius(10)
-                    }
+                Button(action: {
+                    teamManager.deleteTeam(team)
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Delete Team")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.red.opacity(0.2))
+                        .foregroundColor(.red)
+                        .cornerRadius(10)
                 }
                 .padding()
             }
@@ -722,7 +711,14 @@ struct CharacterRowView: View {
         HStack(spacing: 15) {
             ForEach(0..<3) { index in
                 if index < characters.count {
-                    CharacterCircleView(character: characters[index])
+                    NavigationLink(destination: CharacterDetailView(character: characters[index])) {
+                        VStack {
+                            CharacterCircleView(character: characters[index])
+                            Text(characters[index].name)
+                                .font(.caption)
+                                .foregroundColor(.black)
+                        }
+                    }
                 } else {
                     EmptyCharacterSlot()
                 }
@@ -808,6 +804,30 @@ class TeamManager: ObservableObject {
                         }
                     case .failure(let error):
                         print("Error saving team member: \(error)")
+                    }
+                }
+            case .failure(let error):
+                print("Error finding team: \(error)")
+            }
+        }
+    }
+    
+    func deleteTeam(_ team: Team) {
+        guard let teamIndex = teams.firstIndex(where: { $0.id == team.id }) else { return }
+        
+        let query = ParseTeam.query("objectId" == teams[teamIndex].parseObjectId)
+        
+        query.first { [weak self] result in
+            switch result {
+            case .success(var parseTeam):
+                parseTeam.delete { deleteResult in
+                    switch deleteResult {
+                    case .success:
+                        DispatchQueue.main.async {
+                            self?.teams.remove(at: teamIndex)
+                        }
+                    case .failure(let error):
+                        print("Error deleting team: \(error)")
                     }
                 }
             case .failure(let error):
