@@ -1,3 +1,4 @@
+//Jordan Small
 import SwiftUI
 import ParseSwift
 
