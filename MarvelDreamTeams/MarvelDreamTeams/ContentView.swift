@@ -609,6 +609,15 @@ struct TeamListView: View {
                             Text(team.name)
                                 .foregroundColor(.black)
                         }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                withAnimation {
+                                    teamManager.deleteTeam(team) { _ in }
+                                }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
                 }
                 .listStyle(PlainListStyle())
