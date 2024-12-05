@@ -150,7 +150,8 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 - [POST] `/messages` (optional) - To send a message to a friend.
 - [GET] `/users/{userID}/friends` (optional) - To retrieve a list of the user's friends.
 
-### Media
+## Media
 
-## Milestone 8 Progress
+### Milestone 8 Progress
 
+![Guide](https://i.imgur.com/7chLxTZ.gif)
