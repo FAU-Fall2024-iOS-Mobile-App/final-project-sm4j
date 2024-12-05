@@ -337,45 +337,75 @@ struct LandingView: View {
     @Binding var isLoggedIn: Bool
     @StateObject private var viewModel = CharacterViewModel()
     @State private var searchText = ""
+    @State private var showScrollToTop = false
     
     var body: some View {
         NavigationView {
-            VStack {
-                if viewModel.characters.isEmpty && viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    List {
-                        ForEach(viewModel.characters) { character in
-                            Text(character.name)
-                                .foregroundColor(.black)
+            ScrollViewReader { proxy in
+                VStack {
+                    if viewModel.characters.isEmpty && viewModel.isLoading {
+                        ProgressView()
+                    } else {
+                        List {
+                            Text("")
+                                .frame(height: 0)
+                                .id("top")
+                            
+                            ForEach(viewModel.characters) { character in
+                                Text(character.name)
+                                    .foregroundColor(.black)
+                            }
+                            
+                            if viewModel.hasMoreCharacters {
+                                ProgressView()
+                                    .onAppear {
+                                        viewModel.fetchCharacters(searchText: searchText)
+                                        showScrollToTop = true
+                                    }
+                            }
                         }
+                        .listStyle(PlainListStyle())
                         
-                        if viewModel.hasMoreCharacters {
-                            ProgressView()
-                                .onAppear {
-                                    viewModel.fetchCharacters(searchText: searchText)
+                        if showScrollToTop {
+                            Button(action: {
+                                withAnimation {
+                                    proxy.scrollTo("top", anchor: .top)
+                                    showScrollToTop = false
                                 }
+                            }) {
+                                HStack {
+                                    Image(systemName: "arrow.up")
+                                    Text("Back to Top")
+                                }
+                                .padding()
+                                .background(Color.red)
+                                .foregroundColor(.white)
+                                .cornerRadius(20)
+                                .shadow(radius: 5)
+                            }
+                            .padding(.bottom)
                         }
                     }
-                    .listStyle(PlainListStyle())
                 }
-            }
-            .searchable(text: $searchText, prompt: "Search Characters")
-            .onChange(of: searchText, initial: false) { _, newValue in
-                if newValue.isEmpty {
-                    viewModel.resetSearch()
-                } else {
-                    viewModel.fetchCharacters(searchText: newValue)
+                .searchable(text: $searchText, prompt: "Search Characters")
+                .onChange(of: searchText, initial: false) { _, newValue in
+                    if newValue.isEmpty {
+                        viewModel.resetSearch()
+                    } else {
+                        viewModel.fetchCharacters(searchText: newValue)
+                    }
+                    proxy.scrollTo("top", anchor: .top)
+                    showScrollToTop = false
                 }
-            }
-            .navigationBarTitle("Characters", displayMode: .inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        logout()
-                    }) {
-                        Text("Logout")
-                            .foregroundColor(.red)
+                .navigationBarTitle("Characters", displayMode: .inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            logout()
+                        }) {
+                            Text("Logout")
+                                .foregroundColor(.red)
+                        }
                     }
                 }
             }
