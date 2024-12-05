@@ -9,13 +9,14 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var isSplashActive = true // State variable to manage splash screen
+    @State private var showSignUp = false // State variable for navigation
 
     var body: some View {
         Group {
             if isSplashActive {
                 SplashScreen()
             } else {
-                LoginScreen()
+                LoginScreen(showSignUp: $showSignUp) // Pass binding to LoginScreen
             }
         }
         .onAppear {
@@ -56,6 +57,7 @@ struct SplashScreen: View {
 }
 
 struct LoginScreen: View {
+    @Binding var showSignUp: Bool // Binding to control navigation
     @State private var email: String = ""
     @State private var password: String = ""
 
@@ -99,16 +101,75 @@ struct LoginScreen: View {
             .padding(.horizontal)
             
             Button(action: {
-                // Action for sign up button
+                showSignUp = true // Navigate to Sign Up screen
             }) {
                 Text("Sign Up")
                     .foregroundColor(.blue)
+            }
+            .sheet(isPresented: $showSignUp) {
+                SignUpScreen(showSignUp: $showSignUp) // Present Sign Up screen with binding
             }
         }
         .padding(.top, 20) // Move everything up a little bit
         .padding(.bottom, 50) // Adjust bottom padding
         .background(Color.white) // Set background color
         .edgesIgnoringSafeArea(.all) // Ignore safe area for full screen
+    }
+}
+
+struct SignUpScreen: View {
+    @Binding var showSignUp: Bool // Binding to control navigation
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var termsAccepted: Bool = false
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Sign Up")
+                .font(.largeTitle)
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            TextField("Email", text: $email)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal, 10)
+
+            SecureField("Password", text: $password)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal, 10)
+
+            Toggle(isOn: $termsAccepted) {
+                Text("I agree to the Terms of Services and Privacy Policy.")
+                    .font(.footnote)
+            }
+            .padding()
+
+            Button(action: {
+                // Action for continue button
+            }) {
+                Text("Continue")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red) // Button color
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            .padding(.horizontal)
+
+            HStack {
+                Text("Have an Account?")
+                Button(action: {
+                    showSignUp = false // Dismiss Sign Up screen to go back to Sign In
+                }) {
+                    Text("Sign In")
+                        .foregroundColor(.blue)
+                }
+            }
+        }
+        .padding(.top, 20)
+        .padding(.bottom, 50)
+        .background(Color.white)
+        .edgesIgnoringSafeArea(.all)
     }
 }
 
