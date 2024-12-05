@@ -6,6 +6,7 @@
 2. [Product Spec](#Product-Spec)
 3. [Wireframes](#Wireframes)
 4. [Schema](#Schema)
+5. [Media](#Media)
 
 ## Overview
 
@@ -148,3 +149,8 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 - [POST] `/friend_requests` (optional) - To send a friend request to another user.
 - [POST] `/messages` (optional) - To send a message to a friend.
 - [GET] `/users/{userID}/friends` (optional) - To retrieve a list of the user's friends.
+
+### Media
+
+## Milestone 8 Progress
+
