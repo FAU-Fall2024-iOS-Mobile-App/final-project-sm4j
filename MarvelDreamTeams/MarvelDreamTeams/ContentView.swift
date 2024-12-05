@@ -48,6 +48,17 @@ struct MarvelCharacter: Codable, Identifiable {
     let id: Int
     let name: String
     let description: String
+    let thumbnail: ImageInfo
+}
+
+struct ImageInfo: Codable {
+    let path: String
+    let `extension`: String
+    
+    var url: String {
+        let securedPath = path.replacingOccurrences(of: "http://", with: "https://")
+        return "\(securedPath).\(`extension`)"
+    }
 }
 
 class CharacterViewModel: ObservableObject {
@@ -352,8 +363,10 @@ struct LandingView: View {
                                 .id("top")
                             
                             ForEach(viewModel.characters) { character in
-                                Text(character.name)
-                                    .foregroundColor(.black)
+                                NavigationLink(destination: CharacterDetailView(character: character)) {
+                                    Text(character.name)
+                                        .foregroundColor(.black)
+                                }
                             }
                             
                             if viewModel.hasMoreCharacters {
@@ -434,6 +447,58 @@ struct LandingView: View {
                 print("Logout failed: \(error.localizedDescription)")
             }
         }
+    }
+}
+
+struct CharacterDetailView: View {
+    let character: MarvelCharacter
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text(character.name)
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.horizontal)
+                
+                HStack {
+                    Spacer()
+                    AsyncImage(url: URL(string: character.thumbnail.url)) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.red, lineWidth: 4))
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .frame(width: 200, height: 200)
+                    Spacer()
+                }
+                .padding(.horizontal)
+                
+                Text("Series")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal)
+                
+                Text(character.name)
+                    .font(.headline)
+                    .padding(.horizontal)
+                
+                Text("Description")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal)
+                
+                Text(character.description.isEmpty ? "No description available." : character.description)
+                    .padding(.horizontal)
+                
+                Spacer()
+            }
+            .padding(.vertical)
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
