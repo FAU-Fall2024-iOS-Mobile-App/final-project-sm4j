@@ -541,7 +541,14 @@ struct Team: Identifiable {
     let id = UUID()
     var parseObjectId: String?
     var name: String
+    var description: String
     var members: [MarvelCharacter] = []
+    
+    init(name: String, description: String = "", parseObjectId: String? = nil) {
+        self.name = name
+        self.description = description
+        self.parseObjectId = parseObjectId
+    }
     
     static let maxMembers = 6
     
@@ -621,8 +628,9 @@ struct CreateTeamView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var teamManager: TeamManager
     @State private var teamName = ""
+    @State private var teamDescription = ""
     @State private var termsAccepted = false
-
+    
     var body: some View {
         VStack(spacing: 20) {
             Text("Create Team")
@@ -634,6 +642,21 @@ struct CreateTeamView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal, 10)
             
+            TextField("Team description (optional)", text: $teamDescription)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal, 10)
+                .onChange(of: teamDescription) { _, newValue in
+                    if newValue.count > 100 {
+                        teamDescription = String(newValue.prefix(100))
+                    }
+                }
+            
+            Text("\(teamDescription.count)/100")
+                .font(.caption)
+                .foregroundColor(.gray)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.horizontal)
+            
             Toggle(isOn: $termsAccepted) {
                 Text("I agree to the Terms of Services and Privacy Policy.")
                     .font(.footnote)
@@ -642,7 +665,7 @@ struct CreateTeamView: View {
             
             Button(action: {
                 if !teamName.isEmpty && termsAccepted {
-                    teamManager.addTeam(Team(name: teamName))
+                    teamManager.addTeam(Team(name: teamName, description: teamDescription))
                     presentationMode.wrappedValue.dismiss()
                 }
             }) {
@@ -675,14 +698,21 @@ struct TeamDetailView: View {
                     .font(.title)
                     .fontWeight(.bold)
                 
-                CharacterRowView(characters: Array(team.members.prefix(3)))
-                
                 Text("Squad Breakdown")
                     .font(.headline)
                     .foregroundColor(.gray)
                 
+                if !team.description.isEmpty {
+                    Text(team.description)
+                        .font(.body)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal)
+                }
+                
+                CharacterRowView(characters: Array(team.members.prefix(3)), teamId: team.id)
+                
                 CharacterRowView(characters: team.members.count > 3 ? 
-                    Array(team.members[3..<min(6, team.members.count)]) : [])
+                    Array(team.members[3..<min(6, team.members.count)]) : [], teamId: team.id)
                 
                 Spacer()
                 
@@ -706,17 +736,32 @@ struct TeamDetailView: View {
 
 struct CharacterRowView: View {
     let characters: [MarvelCharacter]
+    @EnvironmentObject var teamManager: TeamManager
+    let teamId: UUID
     
     var body: some View {
         HStack(spacing: 15) {
             ForEach(0..<3) { index in
                 if index < characters.count {
-                    NavigationLink(destination: CharacterDetailView(character: characters[index])) {
-                        VStack {
-                            CharacterCircleView(character: characters[index])
-                            Text(characters[index].name)
-                                .font(.caption)
-                                .foregroundColor(.black)
+                    VStack {
+                        ZStack(alignment: .topTrailing) {
+                            NavigationLink(destination: CharacterDetailView(character: characters[index])) {
+                                VStack {
+                                    CharacterCircleView(character: characters[index])
+                                    Text(characters[index].name)
+                                        .font(.caption)
+                                        .foregroundColor(.black)
+                                }
+                            }
+                            
+                            Button(action: {
+                                teamManager.removeCharacterFromTeam(character: characters[index], teamId: teamId)
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.red)
+                                    .background(Color.white.clipShape(Circle()))
+                            }
+                            .offset(x: 10, y: -10)
                         }
                     }
                 } else {
@@ -746,17 +791,11 @@ class TeamManager: ObservableObject {
                 DispatchQueue.main.async {
                     self?.teams = parseTeams.compactMap { parseTeam in
                         guard let name = parseTeam.name else { return nil }
-                        var team = Team(name: name)
-                        team.parseObjectId = parseTeam.objectId
-                        // Convert stored member IDs back to MarvelCharacters
-                        if let memberIds = parseTeam.members {
-                            team.members = memberIds.compactMap { id in
-                                // You might want to fetch character details from your cached data
-                                // or the Marvel API here
-                                nil // For now, we'll handle this later
-                            }
-                        }
-                        return team
+                        return Team(
+                            name: name,
+                            description: parseTeam.description ?? "",
+                            parseObjectId: parseTeam.objectId
+                        )
                     }
                 }
             case .failure(let error):
@@ -768,6 +807,7 @@ class TeamManager: ObservableObject {
     func addTeam(_ team: Team) {
         var parseTeam = ParseTeam()
         parseTeam.name = team.name
+        parseTeam.description = team.description
         parseTeam.members = []
         parseTeam.userId = User.current?.objectId
         
@@ -793,10 +833,14 @@ class TeamManager: ObservableObject {
         
         query.first { [weak self] result in
             switch result {
-            case .success(var parseTeam):
-                parseTeam.members = (parseTeam.members ?? []) + [String(character.id)]
+            case .success(let parseTeam):
+                var updatedMembers = parseTeam.members ?? []
+                updatedMembers.append(String(character.id))
                 
-                parseTeam.save { saveResult in
+                var updatedParseTeam = parseTeam
+                updatedParseTeam.members = updatedMembers
+                
+                updatedParseTeam.save { saveResult in
                     switch saveResult {
                     case .success:
                         DispatchQueue.main.async {
@@ -812,19 +856,49 @@ class TeamManager: ObservableObject {
         }
     }
     
-    func deleteTeam(_ team: Team) {
-        guard let teamIndex = teams.firstIndex(where: { $0.id == team.id }) else { return }
+    func removeCharacterFromTeam(character: MarvelCharacter, teamId: UUID) {
+        guard let teamIndex = teams.firstIndex(where: { $0.id == teamId }),
+              let parseObjectId = teams[teamIndex].parseObjectId else { return }
         
-        let query = ParseTeam.query("objectId" == teams[teamIndex].parseObjectId)
+        let query = ParseTeam.query("objectId" == parseObjectId)
         
         query.first { [weak self] result in
             switch result {
-            case .success(var parseTeam):
+            case .success(let parseTeam):
+                var updatedMembers = parseTeam.members ?? []
+                updatedMembers.removeAll { $0 == String(character.id) }
+                
+                var updatedParseTeam = parseTeam
+                updatedParseTeam.members = updatedMembers
+                
+                updatedParseTeam.save { saveResult in
+                    switch saveResult {
+                    case .success:
+                        DispatchQueue.main.async {
+                            self?.teams[teamIndex].members.removeAll { $0.id == character.id }
+                        }
+                    case .failure(let error):
+                        print("Error removing team member: \(error)")
+                    }
+                }
+            case .failure(let error):
+                print("Error finding team: \(error)")
+            }
+        }
+    }
+    
+    func deleteTeam(_ team: Team) {
+        guard let parseObjectId = team.parseObjectId else { return }
+        let query = ParseTeam.query("objectId" == parseObjectId)
+        
+        query.first { [weak self] result in
+            switch result {
+            case .success(let parseTeam):
                 parseTeam.delete { deleteResult in
                     switch deleteResult {
                     case .success:
                         DispatchQueue.main.async {
-                            self?.teams.remove(at: teamIndex)
+                            self?.teams.removeAll { $0.id == team.id }
                         }
                     case .failure(let error):
                         print("Error deleting team: \(error)")
@@ -845,8 +919,9 @@ struct ParseTeam: ParseObject {
     var originalData: Data?
     
     var name: String?
-    var members: [String]? // Store character IDs
-    var userId: String? // Link to user
+    var description: String?
+    var members: [String]?
+    var userId: String?
 }
 
 #Preview {
