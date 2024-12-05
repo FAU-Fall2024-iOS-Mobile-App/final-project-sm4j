@@ -1,4 +1,5 @@
-//Jordan Small
+// Jordan Small
+// Final Project
 import SwiftUI
 import ParseSwift
 
