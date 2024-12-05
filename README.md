@@ -6,6 +6,7 @@
 2. [Product Spec](#Product-Spec)
 3. [Wireframes](#Wireframes)
 4. [Schema](#Schema)
+5. [Media](#Media)
 
 ## Overview
 
@@ -28,7 +29,7 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 **Required Must-have Stories**
 
-- [ ] User can register and log in to their account.
+- [x] User can register and log in to their account.
 - [ ] User can search for Marvel characters by name, name start, or series.
 - [ ] User can create a team of 6 Marvel characters.
 - [ ] User can save a maximum of 10 teams.
@@ -45,11 +46,11 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 ### 2. Screen Archetypes
 
-- [ ] **Splash Screen**
+- [x] **Splash Screen**
   * Required User Feature: User sees a splash screen with the app logo and branding upon launching the app.
-- [ ] **Login Screen**
+- [x] **Login Screen**
   * Required User Feature: User can log in to the app using their Back4App account.
-- [ ] **Sign Up Screen**
+- [x] **Sign Up Screen**
   * Required User Feature: User can sign up for a Back4app account.
 - [ ] **Character Search Screen**
   * Required User Feature: User can search for Marvel characters using name, name starts with, or series.
@@ -148,3 +149,8 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 - [POST] `/friend_requests` (optional) - To send a friend request to another user.
 - [POST] `/messages` (optional) - To send a message to a friend.
 - [GET] `/users/{userID}/friends` (optional) - To retrieve a list of the user's friends.
+
+### Media
+
+## Milestone 8 Progress
+
