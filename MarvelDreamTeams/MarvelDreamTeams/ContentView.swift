@@ -150,6 +150,12 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            // Check if user is already logged in
+            if User.current != nil {
+                isLoggedIn = true
+            }
+            
+            // Show splash screen
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 withAnimation {
                     isSplashActive = false
@@ -359,6 +365,13 @@ struct LandingView: View {
         NavigationView {
             ScrollViewReader { proxy in
                 VStack {
+                    if let email = User.current?.email {
+                        Text("Logged in as: \(email)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .padding(.top, 5)
+                    }
+                    
                     if viewModel.characters.isEmpty && viewModel.isLoading {
                         ProgressView()
                     } else {
