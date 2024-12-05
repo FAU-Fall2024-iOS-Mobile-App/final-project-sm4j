@@ -135,6 +135,7 @@ struct ContentView: View {
     @State private var isSplashActive = true
     @State private var showSignUp = false
     @State private var isLoggedIn = false
+    @StateObject private var teamManager = TeamManager()
 
     var body: some View {
         Group {
@@ -142,6 +143,7 @@ struct ContentView: View {
                 SplashScreen()
             } else if isLoggedIn {
                 LandingView(isLoggedIn: $isLoggedIn)
+                    .environmentObject(teamManager)
             } else {
                 LoginScreen(showSignUp: $showSignUp, isLoggedIn: $isLoggedIn)
             }
@@ -349,6 +351,7 @@ struct LandingView: View {
     @StateObject private var viewModel = CharacterViewModel()
     @State private var searchText = ""
     @State private var showScrollToTop = false
+    @EnvironmentObject var teamManager: TeamManager
     
     var body: some View {
         NavigationView {
@@ -420,6 +423,12 @@ struct LandingView: View {
                                 .foregroundColor(.red)
                         }
                     }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: TeamListView()) {
+                            Text("Teams")
+                                .foregroundColor(.red)
+                        }
+                    }
                 }
             }
         }
@@ -452,6 +461,8 @@ struct LandingView: View {
 
 struct CharacterDetailView: View {
     let character: MarvelCharacter
+    @State private var showingTeamSelection = false
+    @EnvironmentObject var teamManager: TeamManager
     
     var body: some View {
         ScrollView {
@@ -494,12 +505,328 @@ struct CharacterDetailView: View {
                 Text(character.description.isEmpty ? "No description available." : character.description)
                     .padding(.horizontal)
                 
+                Button(action: {
+                    showingTeamSelection = true
+                }) {
+                    Text("Add to Team")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding(.horizontal)
+                .actionSheet(isPresented: $showingTeamSelection) {
+                    ActionSheet(
+                        title: Text("Add to Team"),
+                        message: Text("Select a team to add this character to"),
+                        buttons: teamManager.teams.compactMap { team in
+                            team.canAddMember ?
+                                .default(Text(team.name)) {
+                                    teamManager.addCharacterToTeam(character: character, teamId: team.id)
+                                } : nil
+                        } + [.cancel()]
+                    )
+                }
+                
                 Spacer()
             }
             .padding(.vertical)
         }
         .navigationBarTitleDisplayMode(.inline)
     }
+}
+
+struct Team: Identifiable {
+    let id = UUID()
+    var parseObjectId: String?
+    var name: String
+    var members: [MarvelCharacter] = []
+    
+    static let maxMembers = 6
+    
+    var canAddMember: Bool {
+        members.count < Team.maxMembers
+    }
+}
+
+struct CharacterCircleView: View {
+    let character: MarvelCharacter
+    
+    var body: some View {
+        AsyncImage(url: URL(string: character.thumbnail.url)) { image in
+            image
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } placeholder: {
+            ProgressView()
+        }
+        .frame(width: 80, height: 80)
+        .clipShape(Circle())
+        .overlay(Circle().stroke(Color.red, lineWidth: 2))
+    }
+}
+
+struct EmptyCharacterSlot: View {
+    var body: some View {
+        Circle()
+            .stroke(Color.gray.opacity(0.3), lineWidth: 2)
+            .frame(width: 80, height: 80)
+    }
+}
+
+struct TeamListView: View {
+    @EnvironmentObject var teamManager: TeamManager
+    @State private var showCreateTeam = false
+    @State private var searchText = ""
+    
+    var filteredTeams: [Team] {
+        if searchText.isEmpty {
+            return teamManager.teams
+        }
+        return teamManager.teams.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+    
+    var body: some View {
+        VStack {
+            List {
+                ForEach(filteredTeams) { team in
+                    NavigationLink(destination: TeamDetailView(team: team)) {
+                        Text(team.name)
+                            .foregroundColor(.black)
+                    }
+                }
+            }
+            .listStyle(PlainListStyle())
+        }
+        .searchable(text: $searchText, prompt: "Search Teams")
+        .navigationBarTitle("Dream Teams", displayMode: .inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showCreateTeam = true
+                }) {
+                    Image(systemName: "plus")
+                        .foregroundColor(.red)
+                }
+            }
+        }
+        .sheet(isPresented: $showCreateTeam) {
+            CreateTeamView()
+        }
+    }
+}
+
+struct CreateTeamView: View {
+    @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var teamManager: TeamManager
+    @State private var teamName = ""
+    @State private var termsAccepted = false
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Create Team")
+                .font(.largeTitle)
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity, alignment: .center)
+            
+            TextField("Give your team a name", text: $teamName)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal, 10)
+            
+            Toggle(isOn: $termsAccepted) {
+                Text("I agree to the Terms of Services and Privacy Policy.")
+                    .font(.footnote)
+            }
+            .padding()
+            
+            Button(action: {
+                if !teamName.isEmpty && termsAccepted {
+                    teamManager.addTeam(Team(name: teamName))
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }) {
+                Text("Continue")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            .padding(.horizontal)
+            .disabled(teamName.isEmpty || !termsAccepted)
+        }
+        .padding(.top, 20)
+        .padding(.bottom, 50)
+        .background(Color.white)
+        .edgesIgnoringSafeArea(.all)
+    }
+}
+
+struct TeamDetailView: View {
+    let team: Team
+    @EnvironmentObject var teamManager: TeamManager
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                Text(team.name)
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                // Top row (first 3 characters)
+                CharacterRowView(characters: Array(team.members.prefix(3)))
+                
+                Text("Squad Breakdown")
+                    .font(.headline)
+                    .foregroundColor(.gray)
+                
+                // Bottom row (last 3 characters, if any)
+                CharacterRowView(characters: team.members.count > 3 ? 
+                    Array(team.members[3..<min(6, team.members.count)]) : [])
+                
+                Spacer()
+                
+                // Buttons
+                VStack(spacing: 10) {
+                    Button(action: {}) {
+                        Text("Add Member")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(team.canAddMember ? Color.red : Color.gray)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .disabled(!team.canAddMember)
+                    
+                    Button(action: {}) {
+                        Text("Delete Team")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.red.opacity(0.2))
+                            .foregroundColor(.red)
+                            .cornerRadius(10)
+                    }
+                }
+                .padding()
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct CharacterRowView: View {
+    let characters: [MarvelCharacter]
+    
+    var body: some View {
+        HStack(spacing: 15) {
+            ForEach(0..<3) { index in
+                if index < characters.count {
+                    CharacterCircleView(character: characters[index])
+                } else {
+                    EmptyCharacterSlot()
+                }
+            }
+        }
+        .padding()
+    }
+}
+
+class TeamManager: ObservableObject {
+    @Published var teams: [Team] = []
+    
+    init() {
+        fetchTeams()
+    }
+    
+    func fetchTeams() {
+        let query = ParseTeam.query()
+            .include("userId")
+            .order([.ascending("name")])
+        
+        query.find { [weak self] result in
+            switch result {
+            case .success(let parseTeams):
+                DispatchQueue.main.async {
+                    self?.teams = parseTeams.compactMap { parseTeam in
+                        guard let name = parseTeam.name else { return nil }
+                        var team = Team(name: name)
+                        team.parseObjectId = parseTeam.objectId
+                        // Convert stored member IDs back to MarvelCharacters
+                        if let memberIds = parseTeam.members {
+                            team.members = memberIds.compactMap { id in
+                                // You might want to fetch character details from your cached data
+                                // or the Marvel API here
+                                nil // For now, we'll handle this later
+                            }
+                        }
+                        return team
+                    }
+                }
+            case .failure(let error):
+                print("Error fetching teams: \(error)")
+            }
+        }
+    }
+    
+    func addTeam(_ team: Team) {
+        var parseTeam = ParseTeam()
+        parseTeam.name = team.name
+        parseTeam.members = []
+        parseTeam.userId = User.current?.objectId
+        
+        parseTeam.save { [weak self] result in
+            switch result {
+            case .success(let savedTeam):
+                DispatchQueue.main.async {
+                    var newTeam = team
+                    newTeam.parseObjectId = savedTeam.objectId
+                    self?.teams.append(newTeam)
+                }
+            case .failure(let error):
+                print("Error saving team: \(error)")
+            }
+        }
+    }
+    
+    func addCharacterToTeam(character: MarvelCharacter, teamId: UUID) {
+        guard let teamIndex = teams.firstIndex(where: { $0.id == teamId }),
+              let parseObjectId = teams[teamIndex].parseObjectId else { return }
+        
+        let query = ParseTeam.query("objectId" == parseObjectId)
+        
+        query.first { [weak self] result in
+            switch result {
+            case .success(var parseTeam):
+                parseTeam.members = (parseTeam.members ?? []) + [String(character.id)]
+                
+                parseTeam.save { saveResult in
+                    switch saveResult {
+                    case .success:
+                        DispatchQueue.main.async {
+                            self?.teams[teamIndex].members.append(character)
+                        }
+                    case .failure(let error):
+                        print("Error saving team member: \(error)")
+                    }
+                }
+            case .failure(let error):
+                print("Error finding team: \(error)")
+            }
+        }
+    }
+}
+
+struct ParseTeam: ParseObject {
+    var objectId: String?
+    var createdAt: Date?
+    var updatedAt: Date?
+    var ACL: ParseACL?
+    var originalData: Data?
+    
+    var name: String?
+    var members: [String]? // Store character IDs
+    var userId: String? // Link to user
 }
 
 #Preview {
