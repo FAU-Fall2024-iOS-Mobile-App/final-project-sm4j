@@ -3,6 +3,7 @@
 import SwiftUI
 import ParseSwift
 import CryptoKit
+import Combine
 
 // Define User Model Conforming to ParseUser
 struct User: ParseUser {
@@ -586,6 +587,7 @@ struct TeamListView: View {
     @EnvironmentObject var teamManager: TeamManager
     @State private var showCreateTeam = false
     @State private var searchText = ""
+    @State private var showMaxTeamsAlert = false
     
     var filteredTeams: [Team] {
         if searchText.isEmpty {
@@ -617,18 +619,27 @@ struct TeamListView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
-                    showCreateTeam = true
+                    if teamManager.canAddTeam {
+                        showCreateTeam = true
+                    } else {
+                        showMaxTeamsAlert = true
+                    }
                 }) {
                     Image(systemName: "plus")
-                        .foregroundColor(.red)
+                        .foregroundColor(teamManager.canAddTeam ? .red : .gray)
                 }
             }
         }
         .sheet(isPresented: $showCreateTeam) {
             CreateTeamView()
         }
+        .alert("Maximum Teams Reached", isPresented: $showMaxTeamsAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("You can have a maximum of \(TeamManager.maxTeams) teams.")
+        }
         .onAppear {
-            teamManager.fetchTeams() // Refresh teams when view appears
+            teamManager.fetchTeams()
         }
     }
 }
@@ -699,6 +710,7 @@ struct TeamDetailView: View {
     let team: Team
     @EnvironmentObject var teamManager: TeamManager
     @Environment(\.presentationMode) var presentationMode
+    @State private var isDeleting = false
     
     var body: some View {
         ScrollView {
@@ -726,8 +738,13 @@ struct TeamDetailView: View {
                 Spacer()
                 
                 Button(action: {
-                    teamManager.deleteTeam(team)
-                    presentationMode.wrappedValue.dismiss()
+                    isDeleting = true
+                    teamManager.deleteTeam(team) { success in
+                        isDeleting = false
+                        if success {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    }
                 }) {
                     Text("Delete Team")
                         .frame(maxWidth: .infinity)
@@ -736,6 +753,7 @@ struct TeamDetailView: View {
                         .foregroundColor(.red)
                         .cornerRadius(10)
                 }
+                .disabled(isDeleting)
                 .padding()
             }
         }
@@ -784,6 +802,11 @@ struct CharacterRowView: View {
 
 class TeamManager: ObservableObject {
     @Published var teams: [Team] = []
+    static let maxTeams = 10
+    
+    var canAddTeam: Bool {
+        teams.count < Self.maxTeams
+    }
     
     init() {
         fetchTeams()
@@ -825,6 +848,7 @@ class TeamManager: ObservableObject {
     }
     
     func addTeam(_ team: Team) {
+        guard canAddTeam else { return }
         var parseTeam = ParseTeam()
         parseTeam.name = team.name
         parseTeam.description = team.description
@@ -936,8 +960,12 @@ class TeamManager: ObservableObject {
         }
     }
     
-    func deleteTeam(_ team: Team) {
-        guard let parseObjectId = team.parseObjectId else { return }
+    func deleteTeam(_ team: Team, completion: @escaping (Bool) -> Void) {
+        guard let parseObjectId = team.parseObjectId else {
+            completion(false)
+            return
+        }
+        
         let query = ParseTeam.query("objectId" == parseObjectId)
         
         query.first { [weak self] result in
@@ -948,13 +976,16 @@ class TeamManager: ObservableObject {
                     case .success:
                         DispatchQueue.main.async {
                             self?.teams.removeAll { $0.id == team.id }
+                            completion(true)
                         }
                     case .failure(let error):
                         print("Error deleting team: \(error)")
+                        completion(false)
                     }
                 }
             case .failure(let error):
                 print("Error finding team: \(error)")
+                completion(false)
             }
         }
     }
