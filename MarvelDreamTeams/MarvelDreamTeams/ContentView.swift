@@ -1031,10 +1031,60 @@ struct InfoView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Hello World")
-                    .font(.title)
-                    .padding()
+            ScrollView {
+                VStack(spacing: 15) {
+                    Image("logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 200, height: 100)
+                        .padding(.top, 10)
+                    
+                    Text("Welcome to Marvel Dream Teams")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    Text("This app allows you to explore the Marvel universe by searching for your favorite characters and creating your own dream teams.")
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("How to Use the App")
+                            .font(.headline)
+                            .padding(.top, 10)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("1. Search for Characters")
+                                    .font(.subheadline)
+                                    .fontWeight(.bold)
+                                Text("Use the search bar to find your favorite Marvel characters. Tap on their name to view detailed information.")
+                                    .font(.caption)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("2. Create a Team")
+                                    .font(.subheadline)
+                                    .fontWeight(.bold)
+                                Text("Navigate to Teams and tap '+' to create a new team. Give your team a name and description.")
+                                    .font(.caption)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("3. Add Members to Your Team")
+                                    .font(.subheadline)
+                                    .fontWeight(.bold)
+                                Text("From the character details screen, use the 'Add to Team' button to add them to your roster.")
+                                    .font(.caption)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.bottom, 20)
             }
             .navigationBarTitle("Information", displayMode: .inline)
             .toolbar {
