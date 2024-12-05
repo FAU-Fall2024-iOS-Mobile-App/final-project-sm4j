@@ -352,6 +352,7 @@ struct LandingView: View {
     @StateObject private var viewModel = CharacterViewModel()
     @State private var searchText = ""
     @State private var showScrollToTop = false
+    @State private var showInfoView = false
     @EnvironmentObject var teamManager: TeamManager
     
     var body: some View {
@@ -425,11 +426,23 @@ struct LandingView: View {
                         }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationLink(destination: TeamListView()) {
-                            Text("Teams")
-                                .foregroundColor(.red)
+                        HStack {
+                            Button(action: {
+                                showInfoView = true
+                            }) {
+                                Image(systemName: "info.circle")
+                                    .foregroundColor(.red)
+                            }
+                            
+                            NavigationLink(destination: TeamListView()) {
+                                Text("Teams")
+                                    .foregroundColor(.red)
+                            }
                         }
                     }
+                }
+                .sheet(isPresented: $showInfoView) {
+                    InfoView()
                 }
             }
         }
@@ -1011,6 +1024,31 @@ struct ParseTeam: ParseObject {
     var description: String?
     var members: [String]?
     var userId: String?
+}
+
+struct InfoView: View {
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                Text("Hello World")
+                    .font(.title)
+                    .padding()
+            }
+            .navigationBarTitle("Information", displayMode: .inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("Done")
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+        }
+    }
 }
 
 #Preview {
