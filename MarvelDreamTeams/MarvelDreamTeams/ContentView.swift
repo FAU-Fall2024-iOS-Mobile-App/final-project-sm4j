@@ -2,6 +2,7 @@
 // Final Project
 import SwiftUI
 import ParseSwift
+import CryptoKit
 
 // Define User Model Conforming to ParseUser
 struct User: ParseUser {
@@ -14,37 +15,136 @@ struct User: ParseUser {
     var username: String?
     var email: String?
     var emailVerified: Bool?
-    var password: String? // This is not stored in Parse, but needed for login
+    var password: String?
     var authData: [String: [String: String]?]?
 }
 
+struct MarvelAPI {
+    static let baseURL = "https://gateway.marvel.com/v1/public"
+    static let publicKey = "d45e65b60effbd19874838d5f7ee50ca"
+    static let privateKey = "09521cf884e5b25c440b4f3743c205931509b7f5"
+    
+    static func generateHash(timestamp: String) -> String {
+        let combined = timestamp + privateKey + publicKey
+        let inputData = Data(combined.utf8)
+        let hashed = Insecure.MD5.hash(data: inputData)
+        return hashed.map { String(format: "%02hhx", $0) }.joined()
+    }
+}
+
+struct MarvelResponse: Codable {
+    let data: MarvelData
+}
+
+struct MarvelData: Codable {
+    let offset: Int
+    let limit: Int
+    let total: Int
+    let count: Int
+    let results: [MarvelCharacter]
+}
+
+struct MarvelCharacter: Codable, Identifiable {
+    let id: Int
+    let name: String
+    let description: String
+}
+
+class CharacterViewModel: ObservableObject {
+    @Published var characters: [MarvelCharacter] = []
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    @Published var hasMoreCharacters = true
+    
+    private var offset = 0
+    private let limit = 20
+    
+    func fetchCharacters(searchText: String = "") {
+        guard !isLoading, hasMoreCharacters else { return }
+        isLoading = true
+        
+        let timestamp = String(Date().timeIntervalSince1970)
+        let hash = MarvelAPI.generateHash(timestamp: timestamp)
+        
+        var urlString = "\(MarvelAPI.baseURL)/characters?ts=\(timestamp)&apikey=\(MarvelAPI.publicKey)&hash=\(hash)&limit=\(limit)&offset=\(offset)"
+        
+        if !searchText.isEmpty {
+            urlString += "&nameStartsWith=\(searchText)"
+            offset = 0 // Reset offset when searching
+            characters = [] // Clear existing results when searching
+        }
+        
+        guard let encodedString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: encodedString) else {
+            errorMessage = "Invalid URL"
+            isLoading = false
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                
+                if let error = error {
+                    self?.errorMessage = error.localizedDescription
+                    return
+                }
+                
+                guard let data = data else {
+                    self?.errorMessage = "No data received"
+                    return
+                }
+                
+                do {
+                    let response = try JSONDecoder().decode(MarvelResponse.self, from: data)
+                    if searchText.isEmpty {
+                        self?.characters.append(contentsOf: response.data.results)
+                        self?.offset += self?.limit ?? 0
+                    } else {
+                        self?.characters = response.data.results
+                    }
+                    // Check if we've reached the end of available characters
+                    self?.hasMoreCharacters = (self?.characters.count ?? 0) < response.data.total
+                } catch {
+                    self?.errorMessage = error.localizedDescription
+                }
+            }
+        }.resume()
+    }
+    
+    func resetSearch() {
+        characters = []
+        offset = 0
+        hasMoreCharacters = true
+        fetchCharacters()
+    }
+}
+
 struct ContentView: View {
-    @State private var isSplashActive = true // State variable for splash screen
-    @State private var showSignUp = false // State variable to control navigation
-    @State private var isLoggedIn = false // State variable for login status
+    @State private var isSplashActive = true
+    @State private var showSignUp = false
+    @State private var isLoggedIn = false
 
     var body: some View {
         Group {
             if isSplashActive {
                 SplashScreen()
             } else if isLoggedIn {
-                LandingView(isLoggedIn: $isLoggedIn) // Pass the binding here
+                LandingView(isLoggedIn: $isLoggedIn)
             } else {
                 LoginScreen(showSignUp: $showSignUp, isLoggedIn: $isLoggedIn)
             }
         }
         .onAppear {
-            // Delay for 3 seconds before transitioning to the login screen
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 withAnimation {
-                    isSplashActive = false // Hide splash screen after delay
+                    isSplashActive = false
                 }
             }
         }
     }
 }
 
-// SplashScreen.swift
 struct SplashScreen: View {
     var body: some View {
         VStack {
@@ -71,17 +171,15 @@ struct SplashScreen: View {
     }
 }
 
-// LoginScreen.swift
 struct LoginScreen: View {
-    @Binding var showSignUp: Bool // Binding to control navigation to sign-up screen
-    @Binding var isLoggedIn: Bool // Binding to control login status
-    @State private var email: String = "" // State variable for email input
-    @State private var password: String = "" // State variable for password input
-    @State private var loginError: String? // State variable for storing login error message
+    @Binding var showSignUp: Bool
+    @Binding var isLoggedIn: Bool
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var loginError: String?
 
     var body: some View {
         VStack(spacing: 20) {
-            // Logo image
             Image("logo")
                 .resizable()
                 .scaledToFit()
@@ -120,22 +218,19 @@ struct LoginScreen: View {
             }
             .padding(.horizontal)
 
-            // Show login error message if any
             if let error = loginError {
                 Text(error)
                     .foregroundColor(.red)
             }
 
-            // Button to navigate to sign-up screen
             Button(action: {
-                showSignUp = true // Navigate to Sign-Up screen
+                showSignUp = true
             }) {
                 Text("Sign Up")
                     .foregroundColor(.blue)
             }
-            // Correct usage of sheet
             .sheet(isPresented: $showSignUp, content: {
-                SignUpScreen(showSignUp: $showSignUp, isLoggedIn: $isLoggedIn) // Present SignUp screen
+                SignUpScreen(showSignUp: $showSignUp, isLoggedIn: $isLoggedIn)
             })
         }
         .padding(.top, 20)
@@ -145,27 +240,25 @@ struct LoginScreen: View {
     }
 
     private func login() {
-        // Use the login method from the ParseUser protocol
         User.login(username: email, password: password) { result in
             switch result {
             case .success:
-                isLoggedIn = true // Set login status to true
+                isLoggedIn = true
                 print("Login successful")
             case .failure(let error):
-                loginError = error.localizedDescription // Display error message if login fails
+                loginError = error.localizedDescription
             }
         }
     }
 }
 
-// SignUpScreen.swift
 struct SignUpScreen: View {
-    @Binding var showSignUp: Bool // Binding to control navigation to sign-up screen
-    @Binding var isLoggedIn: Bool // Binding to control login status
-    @State private var email: String = "" // State variable for email input
-    @State private var password: String = "" // State variable for password input
-    @State private var termsAccepted: Bool = false // State variable for terms acceptance
-    @State private var signUpError: String? // State variable for storing sign-up error message
+    @Binding var showSignUp: Bool
+    @Binding var isLoggedIn: Bool
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var termsAccepted: Bool = false
+    @State private var signUpError: String?
 
     var body: some View {
         VStack(spacing: 20) {
@@ -209,7 +302,7 @@ struct SignUpScreen: View {
             HStack {
                 Text("Have an Account?")
                 Button(action: {
-                    showSignUp = false // Navigate back to sign-in screen
+                    showSignUp = false
                 }) {
                     Text("Sign In")
                         .foregroundColor(.blue)
@@ -240,18 +333,42 @@ struct SignUpScreen: View {
     }
 }
 
-// LandingView.swift
 struct LandingView: View {
-    @Binding var isLoggedIn: Bool // Add a binding to control login status
-
+    @Binding var isLoggedIn: Bool
+    @StateObject private var viewModel = CharacterViewModel()
+    @State private var searchText = ""
+    
     var body: some View {
         NavigationView {
             VStack {
-                Text("Hello World")
-                    .font(.largeTitle)
-                    .padding()
+                if viewModel.characters.isEmpty && viewModel.isLoading {
+                    ProgressView()
+                } else {
+                    List {
+                        ForEach(viewModel.characters) { character in
+                            Text(character.name)
+                                .foregroundColor(.black)
+                        }
+                        
+                        if viewModel.hasMoreCharacters {
+                            ProgressView()
+                                .onAppear {
+                                    viewModel.fetchCharacters(searchText: searchText)
+                                }
+                        }
+                    }
+                    .listStyle(PlainListStyle())
+                }
             }
-            .navigationBarTitle("Landing Page", displayMode: .inline)
+            .searchable(text: $searchText, prompt: "Search Characters")
+            .onChange(of: searchText, initial: false) { _, newValue in
+                if newValue.isEmpty {
+                    viewModel.resetSearch()
+                } else {
+                    viewModel.fetchCharacters(searchText: newValue)
+                }
+            }
+            .navigationBarTitle("Characters", displayMode: .inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
@@ -263,13 +380,25 @@ struct LandingView: View {
                 }
             }
         }
+        .onAppear {
+            if viewModel.characters.isEmpty {
+                viewModel.fetchCharacters()
+            }
+        }
+        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+            Button("OK") {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
-
+    
     private func logout() {
         User.logout { result in
             switch result {
             case .success:
-                isLoggedIn = false // Set login status to false
+                isLoggedIn = false
                 print("Logout successful")
             case .failure(let error):
                 print("Logout failed: \(error.localizedDescription)")
@@ -278,7 +407,6 @@ struct LandingView: View {
     }
 }
 
-// Preview.swift
 #Preview {
     ContentView()
 }
