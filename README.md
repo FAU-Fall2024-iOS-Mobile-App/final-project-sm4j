@@ -30,16 +30,16 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 **Required Must-have Stories**
 
 - [x] User can register and log in to their account.
-- [ ] User can search for Marvel characters by name, name start, or series.
-- [ ] User can create a team of 6 Marvel characters.
-- [ ] User can save a maximum of 10 teams.
-- [ ] User can delete a team.
-- [ ] User can view their saved teams.
-- [ ] User can view detailed information about each character, including name, description, and image.
+- [x] User can search for Marvel characters by name, name start, or series.
+- [x] User can create a team of 6 Marvel characters.
+- [x] User can save a maximum of 10 teams.
+- [x] User can delete a team.
+- [x] User can view their saved teams.
+- [x] User can view detailed information about each character, including name, description, and image.
 
 **Optional Nice-to-have Stories**
 
-- [ ] User can persist their login session across app restarts.
+- [x] User can persist their login session across app restarts.
 - [ ] User can send and receive friend requests.
 - [ ] User can send messages to friends.
 - [ ] User can view their profile with saved teams and friends list (if friend feature is used).
@@ -52,13 +52,13 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
   * Required User Feature: User can log in to the app using their Back4App account.
 - [x] **Sign Up Screen**
   * Required User Feature: User can sign up for a Back4app account.
-- [ ] **Character Search Screen**
+- [x] **Character Search Screen**
   * Required User Feature: User can search for Marvel characters using name, name starts with, or series.
-- [ ] **Character Info Screen**
+- [x] **Character Info Screen**
   * Required User Feature: User can view detailed character information, including name, description, and image.
-- [ ] **Team Creation Screen**
+- [x] **Team Creation Screen**
   * Required User Feature: User can create a team by selecting up to 6 characters.
-- [ ] **Team Management Screen**
+- [x] **Team Management Screen**
   * Required User Feature: User can view their saved teams, which are displayed as a stack list with distinct selectable colors or icons.
   * Required User Feature: User can select a team from the list, which leads to a detailed view of the team.
 - [ ] **Profile Screen** (Optional)
@@ -81,22 +81,22 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 **Flow Navigation** (Screen to Screen)
 
-- [ ] **Splash Screen**
+- [x] **Splash Screen**
   * Leads to **Login Screen**
-- [ ] **Login Screen**
+- [x] **Login Screen**
   * Leads to **Character Search Screen**
   * Leads to **Sign Up Screen**
-- [ ] **Sign Up Screen**
+- [x] **Sign Up Screen**
   * Leads to **Character Search Screen**
-- [ ] **Character Search Screen**
+- [x] **Character Search Screen**
   * Leads to **Character Info Screen**
   * Leads to **Team Management Screen**
-- [ ] **Character Info Screen**
+- [x] **Character Info Screen**
   * Leads back to **Character Search Screen** or **Team Detail Screen**
-- [ ] **Team Management Screen**
+- [x] **Team Management Screen**
   * Leads to **Team Creation Screen**
   * Leads to **Team Detail Screen** (Displays selected team and its members)
-- [ ] **Team Detail Screen**
+- [x] **Team Detail Screen**
   * Leads to **Character Info Screen** (for viewing individual character info)
 - [ ] **Profile Screen** (Optional)
   * Leads to **Friend Requests Screen** (Optional)
