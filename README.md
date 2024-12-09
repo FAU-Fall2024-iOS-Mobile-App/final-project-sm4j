@@ -72,9 +72,9 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 **Tab Navigation** (Tab to Screen)
 
-- [ ] Home Feed (Character Search)
-- [ ] Team Management
-- [ ] Team Creation
+- [x] Home Feed (Character Search)
+- [x] Team Management
+- [x] Team Creation
 - [ ] Profile (Optional)
 - [ ] Messages (Optional)
 - [ ] Friend Requests (Optional)
@@ -154,4 +154,8 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 ### Milestone 8 Progress
 
-![Guide](https://i.imgur.com/7chLxTZ.gif)
+![Guide](https://i.imgur.com/EE1Bawb.gif)
+
+### Milestone 9 Progress
+
+![Guide](https://i.imgur.com/BFzlzs0.gif)
