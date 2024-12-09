@@ -159,3 +159,9 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 ### Milestone 9 Progress
 
 ![Guide](https://i.imgur.com/BFzlzs0.gif)
+
+### Milestone 10 - Demo
+
+Click the image below to be directed to the YouTube demonstration video.
+
+[![Watch the video](https://i.imgur.com/lfVVY5n.png)](https://www.youtube.com/watch?v=iBg0AXp1YMo)
