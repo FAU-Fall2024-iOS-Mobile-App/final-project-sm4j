@@ -164,4 +164,4 @@ The **Marvel Dream Teams** app allows users to search for Marvel characters, cre
 
 Click the image below to be directed to the YouTube demonstration video.
 
-[![Watch the video](https://i.imgur.com/lfVVY5n.png)](https://www.youtube.com/watch?v=iBg0AXp1YMo)
+[![Watch the video](https://i.imgur.com/lfVVY5n.png)](https://www.youtube.com/watch?v=G5oZ4wdv4dQ)
